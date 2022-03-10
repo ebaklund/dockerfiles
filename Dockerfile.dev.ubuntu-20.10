@@ -1,0 +1,73 @@
+# ubuntu really
+FROM ubuntu:20.10
+
+RUN apt-get update
+RUN apt-get -y install software-properties-common
+RUN apt-get -y install python3-testresources
+RUN apt-get -y install python3-pip
+RUN python3 -m pip install pycodestyle
+RUN python3 -m pip install ansible
+RUN python3 -m pip install paramiko
+RUN python3 -m pip install molecule
+RUN python3 -m pip install --upgrade setuptools
+RUN apt-get -y install docker
+RUN apt-get install -y apt-transport-https
+RUN apt-get install -y curl
+RUN apt-get install -y wget
+
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+  gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+RUN echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+RUN apt-get update
+RUN apt-get install docker-ce docker-ce-cli containerd.io -y
+
+#RUN docker run -v /var/run/docker.sock:/var/run/docker.sock hello-world
+#RUN docker run -v /var/run/docker.sock:/var/run/docker.sock -ti docker
+
+RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | \
+  gpg --dearmor > packages.microsoft.gpg
+RUN install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+RUN sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+RUN rm -f packages.microsoft.gpg
+RUN apt-get install -y apt-transport-https
+RUN apt-get update
+RUN apt-get install -y code
+RUN apt-get install -y libxshmfence-dev
+
+RUN apt-get install -y vim
+
+RUN cat /etc/os-release
+RUN python3 --version
+RUN pip3 --version
+RUN ansible --version
+RUN molecule --version
+
+RUN apt-get update && apt-get install -y firefox
+#ENV DOCKER_GATEWAY_HOST=172.17.0.1
+RUN apt-get install -y xauth
+
+#RUN ssh -X localhost 'echo $DISPLAY'
+
+RUN touch ~/.Xauthority
+RUN xauth list
+#RUN xauth generate :0 . trusted
+#RUN xauth add "172.17.0.1:1" "8c1c1e25f7814f3cecf4f9ec5d0e7e52"
+#RUN xauth add "172.17.0.1:1"  "MIT-MAGIC-COOKIE-1"  "8c1c1e25f7814f3cecf4f9ec5d0e7e52"
+RUN xauth list
+
+RUN mkdir -p /usr/home/vscode
+#CMD ["/usr/bin/code"]
+#CMD ["/usr/bin/code", "--user-data-dir"]
+#CMD ["/usr/bin/code", "--user-data-dir=/usr/home/vscode"]
+#CMD ["/usr/bin/firefox"]
+
+# HOW TO USE
+# http://wiki.ros.org/docker/Tutorials/GUI
+# docker run -env="DISPLAY" --env="QT_X11_NO_MITSHM=1" -v /var/run/docker.sock:/var/run/docker.sock-v /tmp/.X11-unix:/tmp/.X11-unix  --rm -ti dev-image
+# docker run -it --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" dev-image
+# export containerId=$(docker ps -l -q)
+# xhost +local:`docker inspect --format='{{ .Config.Hostname }}' $containerId`
+# docker start $containerId
